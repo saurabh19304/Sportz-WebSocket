@@ -48,6 +48,12 @@ web_modules/
 *.tsbuildinfo
 
 # Optional npm cache directory
+
+# Environment variables
+.env
+
+# Drizzle migration output
+/drizzle
 .npm
 
 # Optional eslint cache
