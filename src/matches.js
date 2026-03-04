@@ -1,6 +1,4 @@
-import { Router } from "express";
-
-export const matchRouter = Router();
+export { matchRouter } from "./routes/matches.js";
 
 
 

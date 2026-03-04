@@ -7,6 +7,9 @@ export function getMatchStatus(startTime, endTime, now = new Date()) {
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
         return null;
     }
+        if (end <= start) {
+        return null;
+   }
 
     if (now < start) {
         return MATCH_STATUS.SCHEDULED;
