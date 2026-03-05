@@ -59,6 +59,6 @@ const {data : { startTime, endTime , homeScore , awayScore }} = parsed;
   res.status(201).json( {data: event});
 
   } catch (e) {
-    res.status(500).json({ error: 'failed to create a match', etails: e.message })
+    res.status(500).json({ error: 'failed to create a match', details: e.message })
   }
 })   
