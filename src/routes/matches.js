@@ -52,9 +52,13 @@ const {data : { startTime, endTime , homeScore , awayScore }} = parsed;
       status : getMatchStatus(startTime, endTime )
     }).returning()  //.returning() tells the database to give back the inserted/updated record after the operation.
 
+      if(req.app.locals.broadcastMatchCreated){
+        req.app.locals.broadcastMatchCreated(event);
+      }
+
   res.status(201).json( {data: event});
 
   } catch (e) {
-    res.status(500).json({ error: 'failed to create a match', details: JSON.stringify(e)})
+    res.status(500).json({ error: 'failed to create a match', details: e.message })
   }
 })   
