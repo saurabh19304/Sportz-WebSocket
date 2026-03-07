@@ -11,6 +11,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 const app = express();
 app.use(express.json());
+app.use(securityMiddleware());
 const server = http.createServer(app);
 
 app.get('/', (req, res) => {
@@ -20,7 +21,7 @@ app.get('/', (req, res) => {
 const { broadcastMatchCreated } = attachWebsocketServer(server);
 app.locals.broadcastMatchCreated = broadcastMatchCreated; 
 
-app.use(securityMiddleware())
+
 
 app.use('/matches', matchRouter);
 
