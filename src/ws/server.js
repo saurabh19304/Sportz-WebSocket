@@ -1,4 +1,6 @@
 import { WebSocket, WebSocketServer } from "ws";    
+import { wspArcjet as wsArcjet } from "../arcjet.js";
+
 
 function sendJson(socket, payload){
     if(socket.readyState !== WebSocket.OPEN) return;  
@@ -13,16 +15,46 @@ function broadcast(wss, payload){
 }
 
 export function attachWebsocketServer(server){
-    const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 1024 * 1024 });
+    const wss = new WebSocketServer({ noServer: true, maxPayload: 1024 * 1024 });
 
+    server.on('upgrade', async (req, socket, head) => {
+        const { pathname } = new URL(req.url, 'http://localhost');
+        if (pathname !== '/ws') {
+            socket.write('HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n');
+            socket.destroy();
+            return;
+        }
 
+        if (wsArcjet) {
+            try {
+                const decision = await wsArcjet.protect(req);
 
-    wss.on('connection', (socket) => {
+                if (decision.isDenied()) {
+                    const statusLine = decision.reason.isRateLimit()
+                        ? 'HTTP/1.1 429 Too Many Requests'
+                        : 'HTTP/1.1 403 Forbidden';
+                    socket.write(`${statusLine}\r\nConnection: close\r\n\r\n`);
+                    socket.destroy();
+                    return;
+                }
+            } catch (e) {
+                console.error('WS upgrade error', e);
+                socket.write('HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\n\r\n');
+                socket.destroy();
+                return;
+            }
+        }
 
-      socket.isAlive = true;
-      socket.on('pong', () => {
-      socket.isAlive = true;   
-     });
+        wss.handleUpgrade(req, socket, head, (ws) => {
+            wss.emit('connection', ws, req);
+        });
+    });
+
+    wss.on('connection', (socket, req) => {
+        socket.isAlive = true;
+        socket.on('pong', () => {
+            socket.isAlive = true;
+        });
 
         sendJson(socket, { type: 'welcome' });
         socket.on('error', console.error);
