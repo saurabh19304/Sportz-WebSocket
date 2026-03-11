@@ -34,7 +34,8 @@ commentaryRouter.get('/', async (req, res) => {
 
     res.json({ data });
   } catch (e) {
-    res.status(500).json({ error: 'failed to list commentary', details: String(e) });
+    console.error('failed to list commentary', e);
+    res.status(500).json({ error: 'failed to list commentary' });
   }
 })
 
@@ -60,12 +61,15 @@ commentaryRouter.post('/', async (req, res) => {
       })
       .returning();
 
-      if(req.app.locals.broadcastCommentry){
-        req.app.locals.broadcastCommentry(entry.matchId, entry)
-      }
+      try {
+     req.app.locals.broadcastCommentry?.(entry.matchId, entry);
+   } catch (broadcastError) {
+     console.error('failed to broadcast commentary', broadcastError);
+   }
 
     res.status(201).json({ data: entry });
   } catch (e) {
-    res.status(500).json({ error: 'failed to create commentary', details: String(e) });
+    console.error('failed to list commentary', e);
+    res.status(500).json({ error: 'failed to list commentary' });
   }
 })
