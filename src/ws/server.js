@@ -56,6 +56,7 @@ function handleMessage(socket , data){
         message = JSON.parse(data.toString())
     } catch {
         sendJson(socket, {type: 'error' , message: 'invalid json'})
+        return;
     }
 
 if (
@@ -77,7 +78,7 @@ if (
 ){
     unsubscribe(message.matchId, socket);
     socket.subscriptions.delete(message.matchId);
-    sendJson(socket, {type: 'unsubscribe' , message: message.matchId})
+    sendJson(socket, {type: 'unsubscribed' , message: message.matchId})
 }
            
 }
@@ -143,9 +144,9 @@ export function attachWebsocketServer(server){
             socket.terminate();
         });
 
-        socket.on('close', () => [
-            cleanupSubscription(socket)
-        ])
+        socket.on('close', () => {
+            cleanupSubscription(socket);
+        });
 
         socket.on('error', console.error);
     });
@@ -167,7 +168,7 @@ export function attachWebsocketServer(server){
     }
 
     function broadcastCommentry(matchId, comment){
-        broadcastToMatch(matchId, {type: 'commentry' , data: comment});
+        broadcastToMatch(matchId, {type: 'commentary' , data: comment});
     }
 
     return { broadcastMatchCreated , broadcastCommentry }
